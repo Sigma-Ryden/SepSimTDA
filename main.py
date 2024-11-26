@@ -149,40 +149,30 @@
 # # Запуск головного циклу програми
 # root.mainloop()
 
+
+
 import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
-from tkinter import filedialog, Toplevel
+from tkinter import Toplevel, filedialog
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-def plot_spectrogram():
-    # Вибір аудіофайлу через діалогове вікно
-    audio_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.wav")])
-    if not audio_path:
-        return
-
-    # Завантаження аудіофайлу
-    y, sr = librosa.load(audio_path, sr=None)  # Використовуємо оригінальну частоту дискретизації
-
+def plot_spectrogram(y, sr, n_fft=2048, hop_length = 512, figsize=(10, 6)):
+    """
     # Обчислення спектрограми (STFT)
-    n_fft = 2048  # Оптимальний розмір вікна для більш точної частотної роздільної здатності
-    hop_length = 512  # Крок для перекриття вікон
+    n_fft # Оптимальний розмір вікна для більш точної частотної роздільної здатності
+    hop_length # Крок для перекриття вікон
+    """
     D = librosa.stft(y, n_fft=n_fft, hop_length=hop_length, window=np.hanning(n_fft))
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
     S_db += np.abs(S_db.min())
 
-    # Створення нового вікна для відображення спектрограми
-    spectrogram_window = Toplevel()
-    spectrogram_window.geometry('1200x800')
-    spectrogram_window.title("Spectrogram")
-
-    # Відображення спектрограми
-    fig, ax = plt.subplots(figsize=(10, 6))
+    # Створення фігури для відображення спектрограми
+    fig, ax = plt.subplots(figsize=figsize)
     img = librosa.display.specshow(S_db, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log', cmap='viridis', ax=ax)
     cbar = fig.colorbar(img, ax=ax, format='%+2.0f dB', ticks=np.linspace(S_db.min(), S_db.max(), 10), orientation='vertical')
-    cbar.ax.invert_yaxis()
     cbar.set_label('Power (positive dB)')
     cbar.ax.tick_params(labelsize=10)
     ax.set_xlabel('Time (s)')
@@ -190,26 +180,33 @@ def plot_spectrogram():
     ax.set_ylabel('Frequency (Hz)')
     
     plt.tight_layout()
-
-    # Відображення в новому вікні через tkinter
-    canvas_frame = tk.Frame(spectrogram_window)
-    canvas_frame.pack(fill=tk.BOTH, expand=True)
-
-    h_scrollbar = tk.Scrollbar(canvas_frame, orient=tk.HORIZONTAL)
-    h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
-
-    canvas = FigureCanvasTkAgg(fig, master=canvas_frame)
-    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-    h_scrollbar.config(command=canvas.get_tk_widget().xview)
-    canvas.draw()
+    return fig
 
 # Створення графічного інтерфейсу користувача
 root = tk.Tk()
 root.title("Spectrogram Viewer")
 root.geometry("300x150")
 
+def open_file_and_plot():
+    # Вибір аудіофайлу через діалогове вікно
+    audio_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.wav")])
+    if audio_path:
+        y, sr = librosa.load(audio_path, sr=None)
+        fig = plot_spectrogram(y, sr, figsize=(8, 4))
+        
+        # Створення нового вікна для відображення спектрограми
+        spectrogram_window = Toplevel()
+        spectrogram_window.title("SepSimTDA-Source0")
+        spectrogram_window.resizable(False, False)
+        spectrogram_window.attributes('-toolwindow', True)
+
+        # Відображення в новому вікні через tkinter
+        canvas = FigureCanvasTkAgg(fig, master=spectrogram_window)
+        canvas.get_tk_widget().pack()
+        canvas.draw()
+
 # Додавання кнопки для відображення спектрограми
-button = tk.Button(root, text="Open Audio File and Plot Spectrogram", command=plot_spectrogram)
+button = tk.Button(root, text="Open Audio File and Plot Spectrogram", command=open_file_and_plot)
 button.pack(expand=True)
 
 root.protocol("WM_DELETE_WINDOW", root.quit)
