@@ -101,7 +101,7 @@ model = SepTDA()
 
 """Dataset Preparation """
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 import torchaudio
 import os
 
@@ -110,25 +110,27 @@ class WSJ0MixDataset(Dataset):
     Dataset for WSJ0-Mix speech separation.
     Each item consists of a mixture audio and its clean sources.
     """
-    def __init__(self, mixture_dir, num_speakers=2, sample_rate=8000, segment_length=4):
+    def __init__(self, mixture_dir, subset="train", num_speakers=2, sample_rate=8000, segment_length=4):
         """
         Args:
-            mixture_dir (str): Path to WSJ0-Mix dataset (mixtures and sources).
+            mixture_dir (str): Path to WSJ0-2Mix dataset root directory.
+            subset (str): Subset to load ('train', 'val', or 'test').
             num_speakers (int): Number of speakers in the mixture (default: 2).
             sample_rate (int): Sampling rate of the audio (default: 8000 Hz).
             segment_length (int): Length of the audio segments in seconds (default: 4).
         """
         self.mixture_dir = mixture_dir
+        self.subset = subset
         self.num_speakers = num_speakers
         self.sample_rate = sample_rate
         self.segment_length = segment_length
 
-        # Find mixture and source file paths
+        # Paths for mixtures and sources
         self.mixture_paths = sorted(
-            [os.path.join(mixture_dir, "mix", f) for f in os.listdir(os.path.join(mixture_dir, "mix"))]
+            [os.path.join(mixture_dir, "mix", subset, f) for f in os.listdir(os.path.join(mixture_dir, "mix", subset))]
         )
         self.source_dirs = [
-            os.path.join(mixture_dir, f"s{i+1}") for i in range(num_speakers)
+            os.path.join(mixture_dir, f"s{i+1}", subset) for i in range(num_speakers)
         ]
         self.source_paths = [
             [os.path.join(source_dir, os.path.basename(f)) for f in self.mixture_paths]
@@ -159,9 +161,12 @@ class WSJ0MixDataset(Dataset):
         return mixture, torch.stack(sources)
 
 # Example usage
-mixture_dir = "/path/to/wsj0-mix/2speakers/8k/"  # Adjust to your WSJ0-Mix path
-dataset = WSJ0MixDataset(mixture_dir, num_speakers=2, sample_rate=8000, segment_length=4)
-dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
+mixture_dir = "/path/to/wsj0-2mix"
+
+train_dataset = WSJ0MixDataset(mixture_dir, subset="train", num_speakers=2, sample_rate=8000, segment_length=4)
+#test_dataset = WSJ0MixDataset(mixture_dir, subset="test", num_speakers=2, sample_rate=8000, segment_length=4)
+
+dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
 
 
 """SI-SDR Loss Function"""
