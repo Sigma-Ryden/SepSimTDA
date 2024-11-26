@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+"""Model"""
 # 1. Encoder
 class Encoder(nn.Module):
     def __init__(self, kernel_size=16, stride=8, embedding_dim=256):
@@ -97,39 +98,6 @@ class SepTDA(nn.Module):
 model = SepTDA()
 #print(model)
 
-
-
-# """Dataset Preparation (Simplified Example)"""
-# import torch
-# from torch.utils.data import Dataset, DataLoader
-# import torchaudio
-
-# class MixtureDataset(Dataset):
-#     def __init__(self, file_paths, num_speakers=2, sample_rate=8000, segment_length=4):
-#         self.file_paths = file_paths
-#         self.num_speakers = num_speakers
-#         self.sample_rate = sample_rate
-#         self.segment_length = segment_length
-
-#     def __len__(self):
-#         return len(self.file_paths)
-
-#     def __getitem__(self, idx):
-#         # Load audio files for each speaker
-#         speakers = [torchaudio.load(self.file_paths[idx][i])[0] for i in range(self.num_speakers)]
-#         # Trim or pad to segment length
-#         speakers = [torch.nn.functional.pad(s, (0, max(0, self.segment_length * self.sample_rate - s.size(-1))))[:, :self.segment_length * self.sample_rate] for s in speakers]
-#         # Create mixture
-#         mixture = sum(speakers)
-#         return mixture, torch.stack(speakers)
-
-# # Example dataset
-# file_paths = [
-#     ["speaker1.wav", "speaker2.wav"],  # Replace with real paths
-#     ["speaker3.wav", "speaker4.wav"]
-# ]
-# dataset = MixtureDataset(file_paths)
-# dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
 """Dataset Preparation """
 import torch
@@ -250,4 +218,4 @@ for epoch in range(num_epochs):
     print(f"Epoch {epoch + 1}, Average Loss: {total_loss / len(dataloader):.4f}")
 
 # Save the trained model
-torch.save(model.state_dict(), "septda_model.pth")
+torch.save(model.state_dict(), "sepsimtda_model.pth")
