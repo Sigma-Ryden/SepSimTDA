@@ -159,12 +159,9 @@ class WSJ0MixDataset(Dataset):
         return mixture, torch.stack(sources)
 
 # Example usage
-mixture_dir = "/path/to/wsj0-2mix"
-
-train_dataset = WSJ0MixDataset(mixture_dir, subset="train", num_speakers=2, sample_rate=8000, segment_length=4)
-test_dataset = WSJ0MixDataset(mixture_dir, subset="test", num_speakers=2, sample_rate=8000, segment_length=4)
-
-dataloader = DataLoader(train_dataset, batch_size=2, shuffle=True)
+mixture_dir = "/path/to/wsj0-mix/2speakers/8k/"  # Adjust to your WSJ0-Mix path
+dataset = WSJ0MixDataset(mixture_dir, num_speakers=2, sample_rate=8000, segment_length=4)
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
 
 """SI-SDR Loss Function"""
