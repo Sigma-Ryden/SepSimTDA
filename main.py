@@ -175,6 +175,7 @@ def plot_spectrogram():
 
     # Створення нового вікна для відображення спектрограми
     spectrogram_window = Toplevel()
+    spectrogram_window.geometry('1200x800')
     spectrogram_window.title("Spectrogram")
 
     # Відображення спектрограми
@@ -191,8 +192,15 @@ def plot_spectrogram():
     plt.tight_layout()
 
     # Відображення в новому вікні через tkinter
-    canvas = FigureCanvasTkAgg(fig, master=spectrogram_window)
-    canvas.get_tk_widget().pack()
+    canvas_frame = tk.Frame(spectrogram_window)
+    canvas_frame.pack(fill=tk.BOTH, expand=True)
+
+    h_scrollbar = tk.Scrollbar(canvas_frame, orient=tk.HORIZONTAL)
+    h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
+
+    canvas = FigureCanvasTkAgg(fig, master=canvas_frame)
+    canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+    h_scrollbar.config(command=canvas.get_tk_widget().xview)
     canvas.draw()
 
 # Створення графічного інтерфейсу користувача
