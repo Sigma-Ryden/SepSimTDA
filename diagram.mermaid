@@ -1,0 +1,72 @@
+classDiagram
+    Encoder <|-- nn.Module
+    LSTMAttentionBlock <|-- nn.Module
+    TransformerDecoderAttractor <|-- nn.Module
+    TriplePathBlock <|-- nn.Module
+    Decoder <|-- nn.Module
+    SepTDA <|-- nn.Module
+    SpeechSeparationDataset <|-- Dataset
+
+    class nn.Module {
+    }
+
+    class Encoder {
+        +Conv1d conv1d
+        +GELU gelu
+        +forward(x)
+    }
+
+    class LSTMAttentionBlock {
+        +LSTM lstm
+        +MultiheadAttention attention
+        +Sequential ffn
+        +LayerNorm norm1
+        +LayerNorm norm2
+        +forward(x)
+    }
+
+    class TransformerDecoderAttractor {
+        +Parameter query_embeddings
+        +ModuleList decoder_layers
+        +Linear linear
+        +forward(context)
+    }
+
+    class TriplePathBlock {
+        +LSTMAttentionBlock intra_chunk
+        +LSTMAttentionBlock inter_chunk
+        +TransformerEncoderLayer inter_speaker
+        +forward(x)
+    }
+
+    class Decoder {
+        +ConvTranspose1d deconv1d
+        +forward(x)
+    }
+
+    class SepTDA {
+        +Encoder encoder
+        +LSTMAttentionBlock dual_path
+        +TransformerDecoderAttractor tda
+        +ModuleList triple_path
+        +Decoder decoder
+        +forward(x)
+    }
+
+    class Dataset {
+    }
+
+    class SpeechSeparationDataset {
+        -mixtures
+        -sources
+        -transform
+        +__len__()
+        +__getitem__(idx)
+    }
+
+    SepTDA --> Encoder
+    SepTDA --> LSTMAttentionBlock : uses
+    SepTDA --> TransformerDecoderAttractor
+    SepTDA --> TriplePathBlock : uses
+    SepTDA --> Decoder
+    TriplePathBlock --> LSTMAttentionBlock : uses

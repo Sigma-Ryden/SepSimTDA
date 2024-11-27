@@ -23,7 +23,7 @@ stop_thread = threading.Event()
 audiofile_y = None
 audiofile_sr = None
 
-def plot_spectrogram(y, sr, n_fft=2048, hop_length=512, figsize=(10, 6)):
+def plot_spectrogram(y, sr, n_fft=2048, hop_length=512, figsize=(1, 1)):
     """
     # Обчислення спектрограми (STFT)
     n_fft # Оптимальний розмір вікна для більш точної частотної роздільної здатності
@@ -54,6 +54,7 @@ def truncate_text(text, max_length):
 
 def load_mix():
     """ Функція для вибору wav-файлу. """
+
     filepath = filedialog.askopenfilename(
         filetypes=[("WAV files", "*.wav")],
         title="Select a WAV file"
@@ -74,7 +75,7 @@ def load_mix():
         
         global audiofile_y, audiofile_sr
         audiofile_y, audiofile_sr = librosa.load(filepath, sr=None)
-
+        mix_spectrogram_button.config(state="normal")
 
 def save_source(index):
     """ Функція, що викликається при натисканні кнопки Source. """
@@ -88,16 +89,16 @@ def save_source(index):
         print(f"File saved to: {save_path}")
 
 def spectrogram(index):
-    global audiofile_y, audiofile_sr
+    voicefile_y, voicefile_sr = librosa.load(f"{index}.wav", sr=None)
 
     """ Функція, що викликається при натисканні кнопки Spectrogram1. """
     print(f"Spectrogram called with index: {index}")
 
-    fig = plot_spectrogram(audiofile_y, audiofile_sr, figsize=(8, 4))
+    fig = plot_spectrogram(voicefile_y, voicefile_sr, figsize=(6, 3))
 
     # Створення нового вікна для відображення спектрограми
     spectrogram_window = Toplevel()
-    spectrogram_window.title(f"SepSimTDA: Voice{index}")
+    spectrogram_window.title(f"SepSimTDA: VoiceSpectrogram{index}")
     spectrogram_window.resizable(False, False)
     spectrogram_window.attributes('-toolwindow', True)
 
@@ -108,7 +109,21 @@ def spectrogram(index):
 
 
 def audio_spectrogram():
-    spectrogram(0) # TODO: temp
+    global audiofile_y, audiofile_sr
+
+    """ Функція, що викликається при натисканні кнопки Spectrogram1. """
+    fig = plot_spectrogram(audiofile_y, audiofile_sr, figsize=(6, 3))
+
+    # Створення нового вікна для відображення спектрограми
+    spectrogram_window = Toplevel()
+    spectrogram_window.title(f"SepSimTDA: AudioSpectrogram")
+    spectrogram_window.resizable(False, False)
+    spectrogram_window.attributes('-toolwindow', True)
+
+    # Відображення в новому вікні через tkinter
+    canvas = FigureCanvasTkAgg(fig, master=spectrogram_window)
+    canvas.get_tk_widget().pack()
+    canvas.draw()
 
 def separate_mix():
     """ Функція для створення випадкової кількості кнопок з симуляцією затримки. """
@@ -137,8 +152,9 @@ def separate_mix():
 
         # Розблокувати кнопку LoadMix і пари Source та Show
         load_button.config(state="normal")
-        for button in source_buttons:
-            button.config(state="normal")
+        voice_num = 2;
+        for i in range(voice_num*2):
+            source_buttons[i].config(state="normal")
 
     # Запуск процесу розділення в окремому потоці
     threading.Thread(target=process_separation, daemon=True).start()
@@ -160,7 +176,7 @@ load_button = tk.Button(button_frame, text="LoadAudio", command=load_mix)
 load_button.pack(side="left", padx=5)
 
 # Створення кнопки MixSpectrogram
-mix_spectrogram_button = tk.Button(button_frame, text="ShowSpectrogram", command=audio_spectrogram)
+mix_spectrogram_button = tk.Button(button_frame, text="ShowSpectrogram", command=audio_spectrogram, state="disabled")
 mix_spectrogram_button.pack(side="left", padx=5)
 
 # Кнопка SeparateMix і progress_bar в третьому рядку
@@ -176,10 +192,10 @@ progress_bar = ttk.Progressbar(separate_frame, orient="horizontal", mode="determ
 progress_bar.pack(side="left", fill="x", expand=True, padx=10, pady=5)
 
 # Створення 4 пар кнопок Source і Show
-for i in range(1, 5):
+for i in range(0, 4):
     button_frame = tk.Frame(root)
     button_frame.pack(side="top", anchor="w", pady=2, padx=10)
-    button = tk.Button(button_frame, text=f"LoadVoice{i}", command=lambda i=i: save_source(i), state="disabled")
+    button = tk.Button(button_frame, text=f"SaveVoice{i}", command=lambda i=i: save_source(i), state="disabled")
     button.pack(side="left", padx=5)
     
     # Додавання кнопки Show
